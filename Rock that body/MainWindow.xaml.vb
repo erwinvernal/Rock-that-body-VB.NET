@@ -1,15 +1,36 @@
 ﻿Imports System.ComponentModel
 Imports System.Runtime.CompilerServices
+Imports System.Windows.Threading
 
 Class MainWindow
     Implements INotifyPropertyChanged
+
+    '-- Modelo
+        Public Class TLine
+            Public Property Id As Integer
+            Public Property Line As String
+            Public Property Delay As Integer
+            Public Property DStep As Integer
+            Public Property ForeB As Brush
+            Public Property BackB As Brush
+            Sub New(Id As Integer, Line As String, Delay As Double, DStep As Double, ForeB As Brush, BackB As Brush)
+                Me.Id = Id
+                Me.Line = Line
+                Me.Delay = CInt(Delay * 1000)
+                Me.DStep = CInt(DStep * 1000)
+                Me.ForeB = ForeB
+                Me.BackB = BackB
+            End Sub
+        End Class
 
     '-- Eventos
         Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
 
     '-- Almacenamiento
-        Private _text As String
-        Private _pathmusic As Uri = New Uri(AppDomain.CurrentDomain.BaseDirectory & "\Rock That Body Short.mp3")
+        Private _text       As String = String.Empty
+        Private _foreb      As Brush  = Brushes.White
+        Private _backb      As Brush  = Brushes.Black
+        Private _pathmusic  As Uri = New Uri(AppDomain.CurrentDomain.BaseDirectory & "\Rock That Body Short.mp3")
 
     '-- Propiedades
         Public Property Text As String
@@ -20,7 +41,22 @@ Class MainWindow
                 SetProperty(_text, value)
             End Set
         End Property
-
+        Public Property ForeB As Brush
+            Get
+                Return _foreb
+            End Get
+            Set(value As Brush)
+                SetProperty(_foreb, value)
+            End Set
+        End Property
+        Public Property BackB As Brush
+            Get
+                Return _backb
+            End Get
+            Set(value As Brush)
+                SetProperty(_backb, value)
+            End Set
+        End Property
 
     '-- Inicializacion del control
         Sub New()
@@ -41,51 +77,61 @@ Class MainWindow
                 Dim Scale        As Double = Math.Max(RatioX, RatioY)
 
             '-- Configuramos ventana
-                Me.WindowStartupLocation = WindowStartupLocation.CenterScreen
                 Me.WindowState = WindowState.Maximized
                 Me.GridContainer.LayoutTransform = New ScaleTransform(Scale, Scale)
                 
             '-- Creamos lista de textos
                 Dim TextList As New List(Of TLine) From {
-                    New TLine("Starting...", 0.05),
-                    New TLine("¿Are you ready?", 0.05),
-                    New TLine("I wanna da—", 0.06),
-                    New TLine("I wanna dance in the lights", 0.05),
-                    New TLine("I wanna ro—", 0.07),
-                    New TLine("I wanna rock your body", 0.08),
-                    New TLine("I wanna go", 0.08),
-                    New TLine("I wanna go for a ride", 0.068),
-                    New TLine("Hop in the music and", 0.07),
-                    New TLine("Rock your body", 0.08),
-                    New TLine("Rock your body", 0.069),
-                    New TLine("Come on, come on", 0.035),
-                    New TLine("Rock your body", 0.05),
-                    New TLine("(Rock your body)", 0.03),
-                    New TLine("Rock your body", 0.049),
-                    New TLine("Come on, come on", 0.035),
-                    New TLine("Rock your body", 0.08)
+                    New TLine(0 , "..........."                 , 0.05  , 3    , Brushes.White, Brushes.Black),
+                    New TLine(1 , "¿Are you ready?"             , 0.05  , 2    , Brushes.White, Brushes.Black),
+                    New TLine(2 , "I wanna da—"                 , 0.06  , 0.4  , Brushes.White, Brushes.Black),
+                    New TLine(3 , "I wanna dance in the lights" , 0.05  , 1.6  , Brushes.Black, Brushes.White),
+                    New TLine(4 , "I wanna ro—"                 , 0.07  , 0.18 , Brushes.White, Brushes.Black),
+                    New TLine(5 , "I wanna rock your body"      , 0.08  , 1    , Brushes.White, Brushes.Black),
+                    New TLine(6 , "I wanna go"                  , 0.08  , 0.18 , Brushes.White, Brushes.Black),
+                    New TLine(7 , "I wanna go for a ride"       , 0.068 , 0.78 , Brushes.White, Brushes.Black),
+                    New TLine(8 , "Hop in the music and"        , 0.07  , 1    , Brushes.White, Brushes.Black),
+                    New TLine(9 , "Rock your body"              , 0.08  , 0.2  , Brushes.White, Brushes.Black),
+                    New TLine(10, "Rock your body"              , 0.069 , 0.3  , Brushes.White, Brushes.Black),
+                    New TLine(11, "Come on, come on"            , 0.035 , 0.3  , Brushes.White, Brushes.Black),
+                    New TLine(12, "Rock your body"              , 0.05  , 0.3  , Brushes.White, Brushes.Black),
+                    New TLine(13, "(Rock your body)"            , 0.03  , 0.2  , Brushes.Yellow, Brushes.Black),
+                    New TLine(14, "Rock your body"              , 0.049 , 0.4  , Brushes.White, Brushes.Black),
+                    New TLine(15, "Come on, come on"            , 0.035 , 0.4  , Brushes.White, Brushes.Black),
+                    New TLine(16, "Rock your body"              , 0.08  , 0.3  , Brushes.White, Brushes.Black)
                 }
-
-            '-- Tiempo entre salto
-                Dim DelayStep As Double() = {3, 2, 0.4, 1.6, 0.18, 1, 0.12, 1.5, 0.2, 0.2, 0.3, 0.2, 0.2, 0.3, 0.4, 0.3, 0.3}
 
             '-- Creamos reproductor de musica
                 With Me.MediaE
                     .LoadedBehavior = MediaState.Play
-                    .Volume = 1
-                    .Source = _pathmusic
+                    .Volume         = 1
+                    .Source         = _pathmusic
                 End With
                 
             '-- Arrancamos funciones
-                Dim i   As Integer = 0
-                Dim sp  As Integer = 0
                 For Each line As TLine In TextList
-                    Await TextDelay(line.Line, line.Delay)
+                    If line.Id = 3 Then
+                        Await TextDelay(line.Line, line.Delay)
+                        Dim TempForeB As Brush = Me.ForeB
+                        Dim TempBackB As Brush = Me.BackB
+                        Me.ForeB = line.ForeB
+                        Me.BackB = line.BackB
+                        Await Task.Delay(line.DStep)
+                        Me.ForeB = TempForeB
+                        Me.BackB = TempBackB
 
-                    sp = CInt(DelayStep(i) * 1000)
-                    Await Task.Delay(sp)
+                    ElseIf line.Id = 13 Then
+                        Dim TempForeB As Brush = Me.ForeB
+                        Me.ForeB = line.ForeB
+                        Await TextDelay(line.Line, line.Delay)
+                        Await Task.Delay(line.DStep)
+                        Me.ForeB = TempForeB
 
-                    i += 1
+                    Else
+                        Await TextDelay(line.Line, line.Delay)
+                        Await Task.Delay(line.DStep)
+                    End If
+
                 Next
 
             '-- Finalizamos
@@ -100,11 +146,11 @@ Class MainWindow
         End Sub
 
     '-- Funciones
-        Private Async Function TextDelay(Text As String, Optional Delay As Double = 0.05) As Task
+        Private Async Function TextDelay(Text As String, Delay As Integer) As Task
             Me.Text = String.Empty
             For Each c As Char In Text
                 Me.Text &= c
-                Await Task.Delay(CInt(Delay * 1000))
+                Await Task.Delay(Delay)
             Next
         End Function
 
@@ -133,14 +179,5 @@ Class MainWindow
             Return True
         End Function
 
-    '-- Modelo
-        Public Class TLine
-            Public Property Line As String
-            Public Property Delay As Double
-            Sub New(Line As String, Delay As Double)
-                Me.Line = Line
-                Me.Delay = Delay
-            End Sub
-        End Class
 
 End Class

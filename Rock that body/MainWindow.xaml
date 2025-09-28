@@ -8,7 +8,8 @@
         WindowStyle="None" AllowsTransparency="True"
         Title="Rock That Body" 
         Height="720" Width="1280"
-        Background="Black" Foreground="White"
+        Background="{Binding BackB}" Foreground="{Binding ForeB}"
+        WindowStartupLocation="CenterScreen"
         d:DataContext="{d:DesignInstance Type=local:MainWindow}">
 
     <Grid x:Name="GridContainer">
